@@ -12,8 +12,10 @@ namespace :items do
       next unless content && content['frequency'] == 'daily'
       next unless item.user
 
-      if send_email && content['subtype'] == 'backup.email_archive'
-        ArchiveMailer.data_backup(item.user.uuid).deliver_later
+      if content['subtype'] == 'backup.email_archive'
+        if send_email
+          ArchiveMailer.data_backup(item.user.uuid).deliver_later
+        end
         next
       end
 
@@ -24,7 +26,8 @@ namespace :items do
         ExtensionJob.perform_later(
           url: url,
           user_id: item.user.uuid,
-          extension_id: item.uuid
+          extension_id: item.uuid,
+          silent: !send_email
         )
       rescue StandardError
       end
